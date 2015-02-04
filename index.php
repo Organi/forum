@@ -8,6 +8,8 @@ $app = new \Slim\Slim(array(
 ));
 
 // Initialise Eloquent ORM
+/*
+Example DB Set up
 $settings = array(
 	'driver' => 'mysql',
 	'host' => 'localhost',
@@ -18,6 +20,8 @@ $settings = array(
 	'collation' => 'utf8_general_ci',
 	'prefix' => ''
 );
+*/
+require_once 'db.php';
 $container = new \Illuminate\Container\Container();
 $connFactory = new \Illuminate\Database\Connectors\ConnectionFactory($container);
 $conn = $connFactory->make($settings);
