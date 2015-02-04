@@ -39,32 +39,65 @@ $view->parserOptions = array(
 
 // Routes
 $app->get('/', function() use ($app, $view) {
-
-	$forums = \Forum::all();
-	var_dump($forums);
-
-
-	$app->render('index.html', array('testvar' => 'sdfsd'));
+	$app->render('index.html');
 });
 
-$app->get('/forum/:forumuri', function($uri) use ($app, $view) {
-	// add conditional
-	$forum = \Forum::all();
-	$app->render('forum.html', array('forum' => $forum));
+// Save Forum
+$app->post('/forum/save', function() use ($app, $view) {
+
+	$forum = new \Forum();
+	$forum->name = $app->request->post('name');
+
+	$uri = md5(uniqid());
+	while (\Forum::where('url', '=', $uri)->exists()) {
+		$uri = md5(uniqid());
+	}
+
+	$forum->url = $uri;
+	$forum->save();
+
+	$post = new \Post();
+	$post->forum_id = $forum->id;
+	$post->user = $app->request->post('user');
+	$post->content = $app->request->post('content');
+	$post->save();
+
+	$app->redirect("/forum/{$forum->url}");
 });
 
-$app->post('/forum/save', function() use ($app, $view) {});
-$app->post('/forum/post/save', function() use ($app, $view) {});
+// Save Post
+$app->post('/forum/post/save', function() use ($app, $view) {
 
+	// validate forum_id TODO
 
+	$post = new \Post();
+	$post->forum_id = $app->request->post('forum_id');
+	$post->user = $app->request->post('user');
+	$post->content = $app->request->post('content');
+	$post->save();
 
+	$url = \Forum::where('id', '=', $post->forum_id)->pluck('url');
 
+	$app->redirect("/forum/{$url}");
+});
 
+// View Forum
+$app->get('/forum/:uri', function($uri) use ($app, $view) {
+	$forum = \Forum::where('url', '=', $uri)->first();
+	$posts = \Post::where('forum_id', '=', $forum->id)->get();
 
+	$app->render('forum.html', 
+		array(
+			'forum' => $forum, 
+			'posts' => $posts
+		)
+	);
+});
 
-
-
-
+// Catch All
+$app->map('/:all', function($all) use ($app) {
+	$app->redirect('/');
+})->conditions(array('all' => '.+'))->via('GET', 'POST');
 
 // Run App
 $app->run();

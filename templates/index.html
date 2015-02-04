@@ -1,2 +1,11 @@
-here is a template
-{{ testvar }}
+{% extends "layout.html" %}
+
+{% block content %}
+<form action="forum/save" method="POST">
+	<input type="text" name="name" placeholder="Forum Title" />
+	<input type="text" name="user" placeholder="Your Name" />
+	<textarea name="content" placeholder="Your Post"></textarea>
+
+	<input type="submit" value="Post" />
+</form>
+{% endblock %}
